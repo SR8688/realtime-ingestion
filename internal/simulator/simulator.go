@@ -14,15 +14,11 @@ const (
 type Simulator struct {
 	id        int
 	ctx       context.Context
-	size      int
+	cancel    context.CancelFunc
 	out       chan message.Data
 	interval  time.Duration
 	log       *slog.Logger
 	createdAt time.Time
-}
-
-func (s *Simulator) Start() {
-	go s.produceData()
 }
 
 func (s *Simulator) produceData() {
@@ -40,5 +36,10 @@ func (s *Simulator) produceData() {
 				return
 			}
 		}
+	}
+}
+func (s *Simulator) Stop() {
+	if s.cancel != nil {
+		s.cancel()
 	}
 }
