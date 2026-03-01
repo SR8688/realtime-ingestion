@@ -29,6 +29,8 @@ Returns all stored data for a simulator.
 | NUM_SIMULATORS| 5             |Number of simulator goroutines|
 | NUM_WORKERS   | 2 * NumCPU()  | Worker pool size |
 
+Environment variables can be set directly or via a .env file.
+
 ## Run
 ```
 go run ./cmd/main.go
