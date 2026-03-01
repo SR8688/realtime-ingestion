@@ -21,7 +21,7 @@ type SimulatorManager struct {
 	stopping   bool
 }
 
-func NewSimulator(parent context.Context, out chan message.Data) *SimulatorManager {
+func NewSimulatorManger(parent context.Context, out chan message.Data) *SimulatorManager {
 	ctx, cancel := context.WithCancel(parent)
 	log := slog.New(slog.NewTextHandler(os.Stdout, nil)).With(slog.String("service", "simulator"))
 	manager := &SimulatorManager{

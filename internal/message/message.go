@@ -3,8 +3,9 @@ package message
 import "time"
 
 type Data struct {
-	id         string
-	dataSource string
-	value      int
-	timeStamp  time.Time
+	ID         string
+	DeviceID   int
+	DataSource string
+	Value      int
+	TimeStamp  time.Time
 }
