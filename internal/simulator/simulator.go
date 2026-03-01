@@ -31,7 +31,7 @@ func (s *Simulator) produceData() {
 			return
 		case <-ticker.C:
 			select {
-			case s.out <- message.Data{}:
+			case s.out <- message.NewAmpsData(s.id):
 			case <-s.ctx.Done():
 				return
 			}
