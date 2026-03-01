@@ -9,6 +9,8 @@ import (
 
 type DB interface {
 	CreateMessage(ctx context.Context, data message.Data) error
+	GetAllSimulatorIDs(ctx context.Context) ([]int, error)
+	GetAllDataForSimulator(ctx context.Context, simulatorID int) ([]message.Data, error)
 }
 
 type MessageStore struct {
@@ -49,4 +51,43 @@ func (ms *MessageStore) CreateMessage(ctx context.Context, data message.Data) er
 
 	return nil
 
+}
+func (ms *MessageStore) GetAllSimulatorIDs(ctx context.Context) ([]int, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
+	ms.mu.RLock()
+	defer ms.mu.RUnlock()
+
+	simulatorIDs := make([]int, len(ms.data))
+	i := 0
+	for id := range ms.data {
+		simulatorIDs[i] = id
+		i++
+	}
+
+	return simulatorIDs, nil
+}
+
+func (ms *MessageStore) GetAllDataForSimulator(ctx context.Context, simulatorID int) ([]message.Data, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
+	ms.mu.RLock()
+	defer ms.mu.RUnlock()
+	data, exists := ms.data[simulatorID]
+	if !exists {
+		return nil, fmt.Errorf("simulator with id - %d does not exist", simulatorID)
+	}
+
+	result := make([]message.Data, len(data))
+	copy(result, data)
+
+	return result, nil
 }
