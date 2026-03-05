@@ -8,24 +8,27 @@ import (
 	"log/slog"
 	"net/http"
 	"realtime-ingestion/internal/db"
+	"realtime-ingestion/internal/simulator"
 	"strconv"
 	"time"
 )
 
 type APIServer struct {
-	ctx  context.Context
-	db   db.DB
-	log  *slog.Logger
-	port string
-	srv  *http.Server
+	ctx              context.Context
+	db               db.DB
+	log              *slog.Logger
+	port             string
+	srv              *http.Server
+	simulatorManager *simulator.SimulatorManager
 }
 
-func NewAPIServer(ctx context.Context, db db.DB, log *slog.Logger, port string) *APIServer {
+func NewAPIServer(ctx context.Context, db db.DB, log *slog.Logger, port string, simulatorManager *simulator.SimulatorManager) *APIServer {
 	server := &APIServer{
-		ctx:  ctx,
-		db:   db,
-		log:  log.With(slog.String("service", "api")),
-		port: port,
+		ctx:              ctx,
+		db:               db,
+		log:              log.With(slog.String("service", "api")),
+		port:             port,
+		simulatorManager: simulatorManager,
 	}
 	return server
 }
@@ -34,6 +37,7 @@ func (a *APIServer) StartServer() {
 	router := http.NewServeMux()
 
 	simulatorRouter := http.NewServeMux()
+	simulatorRouter.HandleFunc("POST /", a.createSimulator)
 	simulatorRouter.HandleFunc("GET /", a.getAllSimulatorIDs)
 	simulatorRouter.HandleFunc("GET /{simulator_id}/data", a.getAllDataForSimulator)
 
@@ -68,6 +72,10 @@ func (a *APIServer) StopServer() {
 	if err := a.srv.Shutdown(ctx); err != nil {
 		a.log.Error("error shutting down server", "err", err)
 	}
+}
+
+func (a *APIServer) createSimulator(w http.ResponseWriter, r *http.Request) {
+	a.simulatorManager.SpawnOne(time.Second * 10)
 }
 
 func (a *APIServer) getAllSimulatorIDs(w http.ResponseWriter, r *http.Request) {
