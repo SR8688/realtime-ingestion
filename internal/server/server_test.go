@@ -64,7 +64,7 @@ func TestAPIServer_getAllSimulatorIDs(t *testing.T) {
 			a := NewAPIServer(context.Background(), tt.db, log, ":0", simulatorManager)
 			rr := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, "/simulators/", nil)
-			a.getAllSimulatorIDs(rr, req)
+			a.getAllSimulatorInfo(rr, req)
 			if rr.Code != tt.wantStatus {
 				t.Fatalf("status = %d, want %d. body=%q", rr.Code, tt.wantStatus, rr.Body.String())
 			}

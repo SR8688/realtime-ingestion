@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"realtime-ingestion/internal/model"
+	"sort"
 	"sync"
 	"time"
 )
@@ -87,4 +88,30 @@ func (sm *SimulatorManager) StopOne() {
 		delete(sm.simulators, id)
 		break
 	}
+}
+
+func (sm *SimulatorManager) GetAllSimulatorInfo() []model.SimulatorInfo {
+	sm.mu.RLock()
+	defer sm.mu.RUnlock()
+
+	simulatorInfos := make([]model.SimulatorInfo, 0, len(sm.simulators))
+	simulatorIDs := make([]int, 0, len(sm.simulators))
+
+	for id := range sm.simulators {
+		simulatorIDs = append(simulatorIDs, id)
+	}
+
+	sort.Ints(simulatorIDs)
+
+	for _, id := range simulatorIDs {
+		simulator := sm.simulators[id]
+		simulatorInfo := model.SimulatorInfo{
+			ID:        simulator.id,
+			Interval:  int(simulator.interval.Seconds()),
+			CreatedAt: simulator.createdAt,
+		}
+		simulatorInfos = append(simulatorInfos, simulatorInfo)
+	}
+
+	return simulatorInfos
 }

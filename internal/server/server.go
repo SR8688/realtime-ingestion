@@ -38,7 +38,7 @@ func (a *APIServer) StartServer() {
 
 	simulatorRouter := http.NewServeMux()
 	simulatorRouter.HandleFunc("POST /", a.createSimulator)
-	simulatorRouter.HandleFunc("GET /", a.getAllSimulatorIDs)
+	simulatorRouter.HandleFunc("GET /", a.getAllSimulatorInfo)
 	simulatorRouter.HandleFunc("GET /{simulator_id}/data", a.getAllDataForSimulator)
 
 	router.Handle("/simulators/", http.StripPrefix("/simulators", simulatorRouter)) //important how we do the stripping with one less slash
@@ -78,14 +78,11 @@ func (a *APIServer) createSimulator(w http.ResponseWriter, r *http.Request) {
 	a.simulatorManager.SpawnOne(time.Second * 10)
 }
 
-func (a *APIServer) getAllSimulatorIDs(w http.ResponseWriter, r *http.Request) {
-	ids, err := a.db.GetAllSimulatorIDs(r.Context())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+func (a *APIServer) getAllSimulatorInfo(w http.ResponseWriter, r *http.Request) {
+	simulatorInfos := a.simulatorManager.GetAllSimulatorInfo()
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(ids)
+	json.NewEncoder(w).Encode(simulatorInfos)
 }
 
 func (a *APIServer) getAllDataForSimulator(w http.ResponseWriter, r *http.Request) {
