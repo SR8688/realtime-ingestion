@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"realtime-ingestion/internal/message"
+	"sort"
 	"sync"
 )
 
@@ -68,6 +69,8 @@ func (ms *MessageStore) GetAllSimulatorIDs(ctx context.Context) ([]int, error) {
 		simulatorIDs[i] = id
 		i++
 	}
+
+	sort.Ints(simulatorIDs)
 
 	return simulatorIDs, nil
 }
