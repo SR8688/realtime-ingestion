@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
-	"realtime-ingestion/internal/message"
+	"realtime-ingestion/internal/model"
 	"sync"
 	"time"
 )
@@ -14,14 +14,14 @@ type SimulatorManager struct {
 	cancel     context.CancelFunc
 	simulators map[int]*Simulator
 	log        *slog.Logger
-	out        chan message.Data
+	out        chan model.Data
 	nextID     int
 	mu         sync.RWMutex
 	wg         sync.WaitGroup
 	stopping   bool
 }
 
-func NewSimulatorManger(parent context.Context, out chan message.Data) *SimulatorManager {
+func NewSimulatorManger(parent context.Context, out chan model.Data) *SimulatorManager {
 	ctx, cancel := context.WithCancel(parent)
 	log := slog.New(slog.NewTextHandler(os.Stdout, nil)).With(slog.String("service", "simulator"))
 	manager := &SimulatorManager{

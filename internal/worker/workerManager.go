@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"realtime-ingestion/internal/db"
-	"realtime-ingestion/internal/message"
+	"realtime-ingestion/internal/model"
 	"sync"
 	"time"
 )
@@ -15,7 +15,7 @@ type WorkerManager struct {
 	cancel   context.CancelFunc
 	workers  map[int]*Worker
 	log      *slog.Logger
-	in       chan message.Data
+	in       chan model.Data
 	nextID   int
 	mu       sync.RWMutex
 	wg       sync.WaitGroup
@@ -23,7 +23,7 @@ type WorkerManager struct {
 	db       db.DB
 }
 
-func NewWorkerManager(parent context.Context, in chan message.Data, db db.DB) *WorkerManager {
+func NewWorkerManager(parent context.Context, in chan model.Data, db db.DB) *WorkerManager {
 	ctx, cancel := context.WithCancel(parent)
 	log := slog.New(slog.NewTextHandler(os.Stdout, nil)).With(slog.String("service", "worker"))
 	manager := &WorkerManager{

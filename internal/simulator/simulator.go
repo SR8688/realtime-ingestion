@@ -3,7 +3,7 @@ package simulator
 import (
 	"context"
 	"log/slog"
-	"realtime-ingestion/internal/message"
+	"realtime-ingestion/internal/model"
 	"time"
 )
 
@@ -15,7 +15,7 @@ type Simulator struct {
 	id        int
 	ctx       context.Context
 	cancel    context.CancelFunc
-	out       chan message.Data
+	out       chan model.Data
 	interval  time.Duration
 	log       *slog.Logger
 	createdAt time.Time
@@ -31,7 +31,7 @@ func (s *Simulator) produceData() {
 			return
 		case <-ticker.C:
 			select {
-			case s.out <- message.NewAmpsData(s.id):
+			case s.out <- model.NewAmpsData(s.id):
 			case <-s.ctx.Done():
 				return
 			}

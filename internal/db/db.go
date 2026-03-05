@@ -3,32 +3,32 @@ package db
 import (
 	"context"
 	"fmt"
-	"realtime-ingestion/internal/message"
+	"realtime-ingestion/internal/model"
 	"sort"
 	"sync"
 )
 
 type DB interface {
-	CreateMessage(ctx context.Context, data message.Data) error
+	CreateMessage(ctx context.Context, data model.Data) error
 	GetAllSimulatorIDs(ctx context.Context) ([]int, error)
-	GetAllDataForSimulator(ctx context.Context, simulatorID int) ([]message.Data, error)
+	GetAllDataForSimulator(ctx context.Context, simulatorID int) ([]model.Data, error)
 }
 
 type MessageStore struct {
-	data     map[int][]message.Data
+	data     map[int][]model.Data
 	mu       sync.RWMutex
 	uniqueID map[int]map[string]struct{}
 }
 
 func NewMessageStore() *MessageStore {
 	store := &MessageStore{
-		data:     make(map[int][]message.Data),
+		data:     make(map[int][]model.Data),
 		uniqueID: make(map[int]map[string]struct{}),
 	}
 	return store
 }
 
-func (ms *MessageStore) CreateMessage(ctx context.Context, data message.Data) error {
+func (ms *MessageStore) CreateMessage(ctx context.Context, data model.Data) error {
 
 	select {
 	case <-ctx.Done():
@@ -75,7 +75,7 @@ func (ms *MessageStore) GetAllSimulatorIDs(ctx context.Context) ([]int, error) {
 	return simulatorIDs, nil
 }
 
-func (ms *MessageStore) GetAllDataForSimulator(ctx context.Context, simulatorID int) ([]message.Data, error) {
+func (ms *MessageStore) GetAllDataForSimulator(ctx context.Context, simulatorID int) ([]model.Data, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -89,7 +89,7 @@ func (ms *MessageStore) GetAllDataForSimulator(ctx context.Context, simulatorID 
 		return nil, fmt.Errorf("simulator with id - %d does not exist", simulatorID)
 	}
 
-	result := make([]message.Data, len(data))
+	result := make([]model.Data, len(data))
 	copy(result, data)
 
 	return result, nil

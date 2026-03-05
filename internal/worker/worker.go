@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"realtime-ingestion/internal/db"
-	"realtime-ingestion/internal/message"
+	"realtime-ingestion/internal/model"
 	"time"
 )
 
@@ -12,13 +12,13 @@ type Worker struct {
 	id        int
 	ctx       context.Context
 	cancel    context.CancelFunc
-	in        chan message.Data
+	in        chan model.Data
 	log       *slog.Logger
 	createdAt time.Time
 	db        db.DB
 }
 
-func (w *Worker) processWork(data message.Data) {
+func (w *Worker) processWork(data model.Data) {
 	err := w.db.CreateMessage(w.ctx, data)
 	if err != nil {
 		w.log.Warn("failed to create message", slog.String("error", err.Error()))

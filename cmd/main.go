@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"realtime-ingestion/internal/db"
-	"realtime-ingestion/internal/message"
+	"realtime-ingestion/internal/model"
 	"realtime-ingestion/internal/server"
 	"realtime-ingestion/internal/simulator"
 	"realtime-ingestion/internal/worker"
@@ -69,7 +69,7 @@ func main() {
 	sigCtx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	var queue chan message.Data = make(chan message.Data, queueSize)
+	var queue chan model.Data = make(chan model.Data, queueSize)
 	var store db.DB = db.NewMessageStore()
 
 	simulatorManger := simulator.NewSimulatorManger(sigCtx, queue)

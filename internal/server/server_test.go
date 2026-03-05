@@ -8,7 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"realtime-ingestion/internal/message"
+	"realtime-ingestion/internal/model"
 	"realtime-ingestion/internal/simulator"
 	"reflect"
 	"strings"
@@ -26,10 +26,10 @@ func (f *fakeDB) GetAllSimulatorIDs(ctx context.Context) ([]int, error) {
 	}
 	return f.ids, nil
 }
-func (f *fakeDB) CreateMessage(ctx context.Context, data message.Data) error {
+func (f *fakeDB) CreateMessage(ctx context.Context, data model.Data) error {
 	return nil
 }
-func (f *fakeDB) GetAllDataForSimulator(ctx context.Context, simulatorID int) ([]message.Data, error) {
+func (f *fakeDB) GetAllDataForSimulator(ctx context.Context, simulatorID int) ([]model.Data, error) {
 	return nil, nil
 }
 
@@ -57,7 +57,7 @@ func TestAPIServer_getAllSimulatorIDs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		log := slog.New(slog.NewTextHandler(io.Discard, nil))
-		out := make(chan message.Data)
+		out := make(chan model.Data)
 		simulatorManager := simulator.NewSimulatorManger(context.Background(), out)
 		t.Run(tt.name, func(t *testing.T) {
 
