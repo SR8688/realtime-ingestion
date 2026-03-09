@@ -97,24 +97,21 @@ func (wm *WorkerManager) StopOne() {
 }
 func (wm *WorkerManager) GetAllWorkerInfo() []model.WorkerInfo {
 	wm.mu.RLock()
-	snapWorkers := make([]Worker, 0, len(wm.workers))
+	snapWorkers := make([]model.WorkerInfo, 0, len(wm.workers))
 	for id := range wm.workers {
-		snapWorkers = append(snapWorkers, *wm.workers[id])
+		snapWorker := model.WorkerInfo{
+			ID:           wm.workers[id].id,
+			CreatedAt:    wm.workers[id].createdAt,
+			SuccessCount: wm.workers[id].successCount.Load(),
+			FailCount:    wm.workers[id].failCount.Load(),
+		}
+		snapWorkers = append(snapWorkers, snapWorker)
 	}
-
 	wm.mu.RUnlock()
 
 	sort.Slice(snapWorkers, func(i, j int) bool {
-		return snapWorkers[i].id < snapWorkers[j].id
+		return snapWorkers[i].ID < snapWorkers[j].ID
 	})
 
-	workerInfo := make([]model.WorkerInfo, len(snapWorkers))
-	for i := range snapWorkers {
-		workerInfo[i] = model.WorkerInfo{
-			ID:        snapWorkers[i].id,
-			CreatedAt: snapWorkers[i].createdAt,
-		}
-	}
-
-	return workerInfo
+	return snapWorkers
 }
