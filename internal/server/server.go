@@ -51,7 +51,7 @@ func (a *APIServer) StartServer() {
 
 	router.Handle("/simulators/", http.StripPrefix("/simulators", simulatorRouter)) //important how we do the stripping with one less slash
 	router.Handle("/workers/", http.StripPrefix("/workers", workerRouter))
-
+	router.HandleFunc("/", a.NotFound)
 	srv := &http.Server{
 		Addr:         a.port,
 		Handler:      router,
@@ -120,4 +120,15 @@ func (a *APIServer) GetAllWorkerInfo(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(workerInfos)
+}
+
+func (a *APIServer) NotFound(w http.ResponseWriter, r *http.Request) {
+	a.log.Warn(
+		"route not found",
+		slog.String("host", r.Host),
+		slog.String("path", r.URL.Path),
+		slog.String("method", r.Method),
+	)
+	w.WriteHeader(http.StatusNotFound)
+	fmt.Fprintln(w, "Custom 404: Not Found")
 }
