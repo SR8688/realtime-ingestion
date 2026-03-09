@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"realtime-ingestion/internal/model"
 	"realtime-ingestion/internal/simulator"
+	"realtime-ingestion/internal/worker"
 	"reflect"
 	"strings"
 	"testing"
@@ -59,9 +60,10 @@ func TestAPIServer_getAllSimulatorIDs(t *testing.T) {
 		log := slog.New(slog.NewTextHandler(io.Discard, nil))
 		out := make(chan model.Data)
 		simulatorManager := simulator.NewSimulatorManger(context.Background(), out)
+		workerManager := worker.NewWorkerManager(context.Background(), out, tt.db)
 		t.Run(tt.name, func(t *testing.T) {
 
-			a := NewAPIServer(context.Background(), tt.db, log, ":0", simulatorManager)
+			a := NewAPIServer(context.Background(), tt.db, log, ":0", simulatorManager, workerManager)
 			rr := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, "/simulators/", nil)
 			a.getAllSimulatorInfo(rr, req)

@@ -6,6 +6,7 @@ import (
 	"os"
 	"realtime-ingestion/internal/db"
 	"realtime-ingestion/internal/model"
+	"sort"
 	"sync"
 	"time"
 )
@@ -93,4 +94,27 @@ func (wm *WorkerManager) StopOne() {
 		delete(wm.workers, id)
 		break
 	}
+}
+func (wm *WorkerManager) GetAllWorkerInfo() []model.WorkerInfo {
+	wm.mu.RLock()
+	snapWorkers := make([]Worker, 0, len(wm.workers))
+	for id := range wm.workers {
+		snapWorkers = append(snapWorkers, *wm.workers[id])
+	}
+
+	wm.mu.RUnlock()
+
+	sort.Slice(snapWorkers, func(i, j int) bool {
+		return snapWorkers[i].id < snapWorkers[j].id
+	})
+
+	workerInfo := make([]model.WorkerInfo, len(snapWorkers))
+	for i := range snapWorkers {
+		workerInfo[i] = model.WorkerInfo{
+			ID:        snapWorkers[i].id,
+			CreatedAt: snapWorkers[i].createdAt,
+		}
+	}
+
+	return workerInfo
 }

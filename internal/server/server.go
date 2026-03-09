@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"realtime-ingestion/internal/db"
 	"realtime-ingestion/internal/simulator"
+	"realtime-ingestion/internal/worker"
 	"strconv"
 	"time"
 )
@@ -20,15 +21,17 @@ type APIServer struct {
 	port             string
 	srv              *http.Server
 	simulatorManager *simulator.SimulatorManager
+	workerManager    *worker.WorkerManager
 }
 
-func NewAPIServer(ctx context.Context, db db.DB, log *slog.Logger, port string, simulatorManager *simulator.SimulatorManager) *APIServer {
+func NewAPIServer(ctx context.Context, db db.DB, log *slog.Logger, port string, simulatorManager *simulator.SimulatorManager, workerManager *worker.WorkerManager) *APIServer {
 	server := &APIServer{
 		ctx:              ctx,
 		db:               db,
 		log:              log.With(slog.String("service", "api")),
 		port:             port,
 		simulatorManager: simulatorManager,
+		workerManager:    workerManager,
 	}
 	return server
 }
@@ -36,12 +39,18 @@ func NewAPIServer(ctx context.Context, db db.DB, log *slog.Logger, port string, 
 func (a *APIServer) StartServer() {
 	router := http.NewServeMux()
 
+	//routes for simulator
 	simulatorRouter := http.NewServeMux()
 	simulatorRouter.HandleFunc("POST /", a.createSimulator)
 	simulatorRouter.HandleFunc("GET /", a.getAllSimulatorInfo)
 	simulatorRouter.HandleFunc("GET /{simulator_id}/data", a.getAllDataForSimulator)
 
+	workerRouter := http.NewServeMux()
+	workerRouter.HandleFunc("POST /", a.createWorker)
+	workerRouter.HandleFunc("GET /", a.GetAllWorkerInfo)
+
 	router.Handle("/simulators/", http.StripPrefix("/simulators", simulatorRouter)) //important how we do the stripping with one less slash
+	router.Handle("/workers/", http.StripPrefix("/workers", workerRouter))
 
 	srv := &http.Server{
 		Addr:         a.port,
@@ -101,4 +110,14 @@ func (a *APIServer) getAllDataForSimulator(w http.ResponseWriter, r *http.Reques
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
+}
+
+func (a *APIServer) createWorker(w http.ResponseWriter, r *http.Request) {
+	a.workerManager.SpawnOne()
+}
+func (a *APIServer) GetAllWorkerInfo(w http.ResponseWriter, r *http.Request) {
+	workerInfos := a.workerManager.GetAllWorkerInfo()
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(workerInfos)
 }

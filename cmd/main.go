@@ -78,7 +78,7 @@ func main() {
 	workerManger := worker.NewWorkerManager(sigCtx, queue, store)
 	workerManger.SpawnMultiple(numWorkers)
 
-	srv := server.NewAPIServer(sigCtx, store, log, port, simulatorManger)
+	srv := server.NewAPIServer(sigCtx, store, log, port, simulatorManger, workerManger)
 	srv.StartServer()
 
 	<-sigCtx.Done()
